@@ -1,0 +1,1 @@
+# Minerva - simple blog engine
