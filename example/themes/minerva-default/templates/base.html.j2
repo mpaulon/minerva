@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/cirrus-ui">
+    <link rel="stylesheet" href="/assets/fontawesome-free-6.5.2-web/css/all.css">
+
+    <link rel="stylesheet" href="/assets/custom/css/all.css">
+
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+    
+
+
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-brand">
+            <div class="nav-item no-hover">
+                <a href="/">
+                    <h6 class="title">{{ metadata.name }}</h6>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% block body %}{% endblock %}
+
+<footer class="footer">
+    <h6 class="footer__title text-white uppercase">{{ metadata.name }}</h6>
+    <div class="content">
+        <div class="divider"></div>
+        <div class="row">
+        </div>
+        <p class="subtitle">{{ metadata.author }} <i class="text-primary fa fa-regular fa-copyright"></i> {{ metadata.date }}</p>
+        <p class="subtitle">Made with <i class="text-primary fa fa-heart"></i> using <span class="text-primary">minerva</span> and <span class="text-primary">minerva-default</span> theme</p>
+    </div>
+</footer>
+</body>

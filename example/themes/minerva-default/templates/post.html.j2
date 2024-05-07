@@ -1,0 +1,22 @@
+{% extends "base.html.j2"%}
+
+{% block title %}{{ post_metadata.title | capitalize }}{% endblock %}
+
+{% block body %}
+
+<div class="frame">
+    <div class="frame__header" style="margin:1rem">
+        <div class="frame__title u-text-center">
+            <h1 class="headlines-1 uppercase">{{ post_metadata.title }}</h1>
+        </div>
+        <div class="frame__subtitle u-text-center">
+            {{ post_metadata.summary }}
+        </div>
+    </div>
+    <div class="frame__body u-text-justify" style="margin:1rem">
+        {{ content }}
+
+    </div>
+</div>
+
+{% endblock %}
