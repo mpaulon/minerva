@@ -6,6 +6,9 @@ readme = "README.md"
 license = { file = "LICENSE" }
 dynamic = ["version", "dependencies"]
 
+[project.scripts]
+minerva = "minerva.main:run"
+
 [tool.hatch.version]
 path = "minerva/__version__.py"
 
