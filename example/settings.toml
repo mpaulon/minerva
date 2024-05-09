@@ -9,8 +9,11 @@ name = "Minerva Exemple"
 description = "Un blog de démonstration construit avec le moteur Minerva"
 author = "Michaël PAULON"
 date = "2024"
+flag = "🇫🇷"
+instagram = "#"
 
 
 [settings.metadata.en_US]
 name = "Minerva Example"
 description = "An example blog built with the Minerva engine"
+flag = "🇺🇸"
