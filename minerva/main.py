@@ -25,6 +25,10 @@ class Minerva:
         self._folder = folder
         self._load_config(config)
 
+    @property
+    def output_folder(self):
+        return self._output_folder
+
     def _load_config(self, config: dict):
         logger.info("Loading minerva config")
         self._config = config["settings"]
@@ -62,7 +66,7 @@ class Minerva:
             index.write(
                 template.render(
                     metadata=self._config["metadata"][self._config["language"]],
-                    posts=posts
+                    posts=posts,
                 )
             )
 
@@ -110,14 +114,33 @@ class Minerva:
         logger.info("Building posts data/assets")
         post_data_folder = self._folder / "posts" / "data"
         if post_data_folder.exists():
-            shutil.copytree(
-                post_data_folder, self._output_folder / "posts" / "data"
-            )
+            shutil.copytree(post_data_folder, self._output_folder / "posts" / "data")
             return
         logger.warning("No posts data/assets folder found")
 
     def _build_pagefind(self):
         return
+
+    def _build_posts_list(self, posts: dict):
+        logger.info("Building posts list")
+        template = self._jinja_environment.get_template("list.html.j2")
+        with open(self._output_folder / "list.html", "w") as out:
+            out.write(
+                template.render(
+                    metadata=self._config["metadata"][self._config["language"]],
+                    posts=posts,
+                )
+            )
+
+    def _build_404(self):
+        logger.info("Building 404 page")
+        template = self._jinja_environment.get_template("404.html.j2")
+        with open(self._output_folder / "404.html", "w") as out:
+            out.write(
+                template.render(
+                    metadata=self._config["metadata"][self._config["language"]],
+                )
+            )
 
     def build(self, clean: bool = False):
         logger.info("Building blog")
@@ -125,8 +148,10 @@ class Minerva:
         self._create_jinja_loader()
         posts = self._build_posts()
         self._build_index(posts)
+        self._build_posts_list(posts)
         if self._config.get("pagefind", False):
             self._build_pagefind()
+        self._build_404()
 
 
 def run():
@@ -142,6 +167,12 @@ def run():
     build_parser.add_argument(
         "--clean", action="store_true", help="cleanup build directory before building"
     )
+    build_parser.add_argument(
+        "--serve",
+        action="store_true",
+        help="serve the static site on localhost with the specified port",
+    )
+    build_parser.add_argument("--serve-port", type=int, default=8000, required=False)
 
     args = parser.parse_args()
 
@@ -162,7 +193,21 @@ def run():
         config = tomllib.load(config_file)
 
     if args.action == "build":
-        Minerva(config, folder_path).build(clean=args.clean)
+        builder = Minerva(config, folder_path)
+        builder.build(clean=args.clean)
+
+        if args.serve:
+            import http.server
+            import socketserver
+
+            with socketserver.TCPServer(
+                ("", args.serve_port),
+                lambda request, client_address, server: http.server.SimpleHTTPRequestHandler(
+                    request, client_address, server, directory=builder.output_folder
+                ),
+            ) as httpd:
+                logger.info("Serving on port %s", args.serve_port)
+                httpd.serve_forever()
 
 
 if __name__ == "__main__":
