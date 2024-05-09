@@ -1,43 +1,102 @@
 <!DOCTYPE html>
+{# TODO: fix lang #}
+<html lang="fr-FR">
 
 <head>
-    <link rel="stylesheet" href="https://unpkg.com/cirrus-ui">
-    <link rel="stylesheet" href="/assets/fontawesome-free-6.5.2-web/css/all.css">
+    <link rel="stylesheet" href="https://unpkg.com/cirrus-ui" />
+    <link rel="stylesheet" href="/assets/fontawesome-free-6.5.2-web/css/all.css" />
 
-    <link rel="stylesheet" href="/assets/custom/css/all.css">
+    <link rel="stylesheet" href="/assets/custom/css/all.css" />
 
-    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
 
 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>{% block title %}{% endblock %}</title>
 </head>
 
 <body>
-    <div class="header">
-        <div class="header-brand">
+
+    <div class="header" style="padding-left: 0;">
+        <div class="header-brand" style="margin-left: 0;">
+            <div class="nav-item nav-btn" style="cursor: pointer; display: block; position: relative; margin-left: 0;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="nav-item no-hover">
                 <a href="/">
                     <h6 class="title">{{ metadata.name }}</h6>
                 </a>
             </div>
+
+        </div>
+        <div class="header-nav" id="header-menu" role="button">
+            <div class="nav-left">
+                <div class="nav-item no-hover">
+                    <a href="/list.html">
+                        Articles
+                    </a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-item no-hover">
+                    <a href="/contact.html">
+                        Contact
+                    </a>
+                </div>
+                {% if metadata.instagram %}
+                <div class="nav-item no-hover">
+                    <a href="{{ metadata.instagram }}">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-
-    {% block body %}{% endblock %}
-
-<footer class="footer">
-    <h6 class="footer__title text-white uppercase">{{ metadata.name }}</h6>
-    <div class="content">
-        <div class="divider"></div>
-        <div class="row">
-        </div>
-        <p class="subtitle">{{ metadata.author }} <i class="text-primary fa fa-regular fa-copyright"></i> {{ metadata.date }}</p>
-        <p class="subtitle">Made with <i class="text-primary fa fa-heart"></i> using <span class="text-primary">minerva</span> and <span class="text-primary">minerva-default</span> theme</p>
+    <div class="u-flex u-flex-column u-justify-center">
+        {% block body %}{% endblock %}
     </div>
-</footer>
+
+    <footer class="footer">
+        <h6 class="footer__title text-white uppercase">{{ metadata.name }}</h6>
+        <div class="content">
+
+            <div class="divider"></div>
+            <div class="row">
+            </div>
+            <p class="subtitle">{{ metadata.author }} <i class="text-primary fa fa-regular fa-copyright"></i> {{
+                metadata.date }}</p>
+            <p class="subtitle">Made with <i class="text-primary fa fa-heart"></i> using <span
+                    class="text-primary">minerva</span> and <span class="text-primary">minerva-default</span> theme
+            </p>
+        </div>
+    </footer>
+
+
+    <script>
+        // Get all the nav-btns in the page
+        let navBtns = document.querySelectorAll('.nav-btn');
+
+        // Add an event handler for all nav-btns to enable the dropdown functionality
+        navBtns.forEach(function (ele) {
+            ele.addEventListener('click', function () {
+                // Get the dropdown-menu associated with this nav button (insert the id of your menu)
+                let dropDownMenu = document.getElementById('header-menu');
+
+                // Toggle the nav-btn and the dropdown menu
+                ele.classList.toggle('active');
+                dropDownMenu.classList.toggle('active');
+            });
+        });
+    </script>
+
+
 </body>
+
+</html>

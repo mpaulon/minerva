@@ -1,4 +1,8 @@
-#footer {
-    position: absolute;
-    bottom: 0;
+body {
+    min-height: 100vh;
+}
+
+.footer {
+    position: sticky;
+    top: 100%;
 }

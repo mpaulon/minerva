@@ -1,0 +1,38 @@
+{% extends "base.html.j2"%}
+
+{% block title %}Liste des articles{% endblock %}
+
+{% block body %}
+<div class="grid-md grid-cols-5-md u-gap-2 mx-2">
+    {% for post_name, post in posts.items() %}
+    <div class="grid-c-1 grid-r-1">
+        <div class="card h-100p u-flex u-flex-column">
+            <a href="/posts/{{ post_name }}.html">
+                <div class="card__container" style="min-height: 10rem; max-height:15vh;">
+                    {% if not post.thumbnail %}
+                    <div class="card-image"
+                        style="background-color: rebeccapurple; background-image: radial-gradient(circle at right top, rgb(0, 255, 255), rgba(0, 255, 255, 0)), radial-gradient(circle at left bottom, rgb(255, 20, 146), rgba(255, 20, 146, 0));">
+                    </div>
+                    {% else %}
+                    <div class="card-image" style="background-image: url(&quot;posts/{{ post.thumbnail }}&quot;);">
+                    </div>
+                    {% endif %}
+
+                    <div class="card__title-container">
+                        <p class="title">{{ post.title | capitalize }}</p>
+                    </div>
+                </div>
+            </a>
+            <div class="content pt-1 px-2">
+                <p>{{ post.summary }}</p>
+            </div>
+            {% if post.date %}
+            <div class="card__footer">
+                <div class="u-text-center"><span>{{ post.date }}</span></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
