@@ -9,12 +9,15 @@ dynamic = ["version", "dependencies"]
 [project.scripts]
 minerva = "minerva.main:run"
 
-[tool.hatch.version]
-path = "minerva/__version__.py"
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 dev = ["requirements-dev.txt"]
+
+[tool.hatch.version]
+path = "minerva/__version__.py"
 
 [build-system]
 requires = ["hatchling", "hatch-requirements-txt"]

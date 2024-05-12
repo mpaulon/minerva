@@ -9,4 +9,5 @@
  - command line create new post
  - nice theme
  - search in page https://pagefind.app/docs/api/
+
 ## DONE

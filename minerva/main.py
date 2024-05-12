@@ -8,7 +8,7 @@ from pathlib import Path
 import jinja2
 from markdown_it import MarkdownIt
 from mdit_py_plugins.front_matter import front_matter_plugin
-
+from mdit_py_figure import figure_plugin
 logger = logging.getLogger("minerva")
 
 
@@ -19,7 +19,7 @@ class Minerva:
 
     _md = MarkdownIt("commonmark", {"breaks": True, "html": True}).use(
         front_matter_plugin
-    )
+    ).use(figure_plugin)
 
     def __init__(self, config: dict, folder: Path):
         self._folder = folder
