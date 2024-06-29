@@ -126,7 +126,9 @@ class Minerva:
         logger.warning("No posts data/assets folder found")
 
     def _build_pagefind(self):
-        return
+        logger.info("Building search page")
+        template = self._jinja_environment.get_template("search.html.j2")
+        self._render(template, self._output_folder / "search.html")
 
     def _build_posts_list(self, posts: dict):
         logger.info("Building posts list")

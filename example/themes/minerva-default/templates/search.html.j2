@@ -1,0 +1,20 @@
+{% extends "base.html.j2" %}
+
+
+{% block stylesheet %}
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+{% endblock %}
+
+{% block script %}
+<script src="/pagefind/pagefind-ui.js"></script>
+{% endblock %}
+
+{% block title %}{{ metadata.name }}{% endblock %}
+{%block body %}
+<div id="search"></div>
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        new PagefindUI({ element: "#search", showSubResults: true });
+    });
+</script>
+{% endblock %}
