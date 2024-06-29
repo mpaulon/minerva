@@ -1,10 +1,12 @@
 {% extends "base.html.j2"%}
 
 {% block title %}{{ post_metadata.title | capitalize }}{% endblock %}
+{% block description %}{{ post_metadata.summary }}{% endblock %}
+{% block thumbnail %}{% if post_metadata.thumbnail %}posts/{{ post_metadata.thumbnail }}{% endif %}{% endblock %}
 
 {% block body %}
 
-<div class="frame">
+<div class="frame" data-pagefind-body>
     <div class="frame__header" style="margin:1rem">
         <div class="frame__title u-text-center">
             <h1 class="headlines-1 uppercase">{{ post_metadata.title }}</h1>

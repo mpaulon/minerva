@@ -7,16 +7,37 @@
     <link rel="stylesheet" href="/assets/fontawesome-free-6.5.2-web/css/all.css" />
 
     <link rel="stylesheet" href="/assets/custom/css/all.css" />
+    <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+
+    {% block stylesheet %}
+    {% endblock %}
 
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
 
+    <script src="/pagefind/pagefind-ui.js"></script>
 
+    {% block script %}
+    {% endblock %}
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{% block title %}{% endblock %}</title>
+    <meta name="og:site_name" content="{{ metadata.name }}" />
+
+    <title data-pagefind-meta="title">{% block title %}{% endblock %}</title>
+    <meta name="title" content="{{ self.title() }}" />
+    <meta property="og:title" content="{{ self.title() }}" />
+    <meta property="twitter:title" content="{{ self.title() }}" />
+
+    <meta name="description" content="{% block description %}{% endblock %}" />
+    <meta property="og:description" content="{{ self.description() }}" />
+    <meta property="twitter:description" content="{{ self.description() }}" />
+    {% if self.thumbnail() %}
+    <meta data-pagefind-meta="image[content]" property="og:image"
+        content="{{ settings.base_url }}/{% block thumbnail %}{% endblock %}" />
+    <meta property="twitter:image" content="{{ settings.base_url }}/{{ self.thumbnail() }}" />
+    {% endif %}
 </head>
 
 <body>
@@ -42,6 +63,11 @@
                         Articles
                     </a>
                 </div>
+                <div class="nav-item no-hover">
+                    <a href="#search-modal">
+                        Recherche
+                    </a>
+                </div>
             </div>
             <div class="nav-right">
                 <div class="nav-item no-hover">
@@ -59,6 +85,44 @@
             </div>
         </div>
     </div>
+    <div class="modal modal-large modal-animated--dropdown" id="search-modal">
+        <a href="#searchModalDialog" class="modal-overlay close-btn" aria-label="Close"></a>
+        <div class="modal-content" role="document">
+            <div class="modal-header u-flex u-justify-space-between" style="min-width: 100%">
+                <div class="modal-title u-text-right">
+                    <a href="" aria-label="Close">
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="r">
+                    <h3 class="font-alt font-light u-text-center">Rechercher dans les articles</h3>
+                </div>
+                <div class="space"></div>
+                <div class="input-control">
+                    <input id="pagefindsearch" type="text" class="input-contains-icon"
+                        placeholder="Rechercher dans les articles">
+                    <span class="icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                </div>
+                <div class="divider"></div>
+                <template id="pagefindresultitem">
+                    <div class="tile tile--center py-1 px-2 my-1"
+                        style="box-shadow: rgba(0, 0, 0, 0.06) 0px 3px 6px, rgba(0, 0, 0, 0.03) 0px 3px 6px;">
+                        <div class="tile__icon">
+                            <figure class="avatar"><img id="pagefindresultitem-thumbnail" src=""></figure>
+                        </div>
+                        <div class="tile__container">
+                            <p class="tile__title m-0" id="pagefindresultitem-title"></p>
+                            <p class="tile__subtitle m-0" id="pagefindresultitem-content"></p>
+                        </div>
+                    </div>
+                </template>
+                <div class="my-1" id="pagefindresult"></div>
+            </div>
+        </div>
+    </div>
     <div class="u-flex u-flex-column u-justify-center">
         {% block body %}{% endblock %}
     </div>
@@ -70,10 +134,12 @@
             <div class="divider"></div>
             <div class="row">
             </div>
-            <p class="subtitle">{{ metadata.author }} <i class="text-primary fa fa-regular fa-copyright"></i> {{
-                metadata.date }}</p>
-            <p class="subtitle">Made with <i class="text-primary fa fa-heart"></i> using <span
-                    class="text-primary">minerva</span> and <span class="text-primary">minerva-default</span> theme
+            <p class="subtitle">
+                {{ metadata.author }} <i class="text-primary fa fa-regular fa-copyright"></i> {{ metadata.date }}
+            </p>
+            <p class="subtitle">
+                Made with <i class="text-primary fa fa-heart"></i> using <span class="text-primary">minerva</span> and
+                <span class="text-primary">minerva-default</span> theme.
             </p>
         </div>
     </footer>
@@ -95,8 +161,37 @@
             });
         });
     </script>
+    <script>
+        window.onload = async function () {
+            const pagefind = await import("/pagefind/pagefind.js");
+            pagefind.init();
+
+            function formatpagefindresult(results, output) {
+                output.innerHTML = "";
+                let template = document.querySelector("#pagefindresultitem");
+                results.forEach(function (result) {
+                    console.log(result)
+                    const tile = template.content.cloneNode(true);
+                    tile.querySelector("#pagefindresultitem-title").textContent = result.meta.title;
+                    tile.querySelector("#pagefindresultitem-thumbnail").src = result.meta.image;
+                    tile.querySelector("#pagefindresultitem-content").src = result.excerpt;
+
+                    output.appendChild(tile);
+                });
+            }
+
+            async function pagefindsearch(value) {
+                const search = await pagefind.search(value);
+                const results = await Promise.all(search.results.slice(0, 5).map(r => r.data()));
+                let searchResultBox = document.getElementById("pagefindresult");
+                formatpagefindresult(results, searchResultBox);
+            }
+
+            let searchBox = document.getElementById("pagefindsearch")
+            searchBox.addEventListener('keyup', function () { pagefindsearch(searchBox.value); });
 
 
+        }</script>
 </body>
 
 </html>
