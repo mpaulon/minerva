@@ -3,6 +3,7 @@ language = "fr_FR"
 languages = ["fr_FR", "en_US"]
 theme = "minerva-default"
 pagefind = true
+base_url = "https://minerva.paulon.org"
 
 [settings.metadata.fr_FR]
 name = "Minerva Exemple"
