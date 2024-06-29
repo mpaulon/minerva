@@ -42,6 +42,16 @@ class Minerva:
         with open(folder / ".gitignore", "w") as _gitignore:
             _gitignore.write("*")
 
+    def _render(self, template: jinja2.Template, output: Path, **variables):
+        with open(output, "w") as _out:
+            _out.write(
+                template.render(
+                    metadata=self._config["metadata"][self._config["language"]],
+                    settings=self._config,
+                    **variables,
+                )
+            )
+
     def _create_jinja_loader(self):
         self._jinja_environment = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
@@ -67,13 +77,7 @@ class Minerva:
     def _build_index(self, posts: dict):
         logger.info("Building blog index page")
         template = self._jinja_environment.get_template("index.html.j2")
-        with open(self._output_folder / "index.html", "w") as index:
-            index.write(
-                template.render(
-                    metadata=self._config["metadata"][self._config["language"]],
-                    posts=posts,
-                )
-            )
+        self._render(template, self._output_folder / "index.html", posts=posts)
 
     def _parse_meta(self, content: str):
         metadata = {}
@@ -91,14 +95,12 @@ class Minerva:
             metadata = self._parse_meta(tokens[0].content)
         else:
             raise RuntimeError(f"Missing metadata for post {filename}")
-        with open(self._output_folder / "posts" / f"{filename}.html", "w") as out:
-            out.write(
-                template.render(
-                    content=self._md.render(content_str),
-                    post_metadata=metadata,
-                    metadata=self._config["metadata"][self._config["language"]],
-                )
-            )
+        self._render(
+            template,
+            self._output_folder / "posts" / f"{filename}.html",
+            content=self._md.render(content_str),
+            post_metadata=metadata,
+        )
         return metadata
 
     def _build_posts(self) -> dict:
@@ -129,23 +131,12 @@ class Minerva:
     def _build_posts_list(self, posts: dict):
         logger.info("Building posts list")
         template = self._jinja_environment.get_template("list.html.j2")
-        with open(self._output_folder / "list.html", "w") as out:
-            out.write(
-                template.render(
-                    metadata=self._config["metadata"][self._config["language"]],
-                    posts=posts,
-                )
-            )
+        self._render(template, self._output_folder / "list.html", posts=posts)
 
     def _build_404(self):
         logger.info("Building 404 page")
         template = self._jinja_environment.get_template("404.html.j2")
-        with open(self._output_folder / "404.html", "w") as out:
-            out.write(
-                template.render(
-                    metadata=self._config["metadata"][self._config["language"]],
-                )
-            )
+        self._render(template, self._output_folder / "404.html")
 
     def build(self, clean: bool = False):
         logger.info("Building blog")
