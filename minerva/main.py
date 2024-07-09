@@ -199,12 +199,15 @@ def run():
             import http.server
             import socketserver
 
+            MinervaRequestHandler = http.server.SimpleHTTPRequestHandler
+            MinervaRequestHandler.extensions_map[".html"] = "text/html;charset=UTF-8"
             with socketserver.TCPServer(
                 ("", args.serve_port),
-                lambda request, client_address, server: http.server.SimpleHTTPRequestHandler(
+                lambda request, client_address, server: MinervaRequestHandler(
                     request, client_address, server, directory=builder.output_folder
                 ),
             ) as httpd:
+                httpd.allow_reuse_address = True
                 logger.info("Serving on port %s", args.serve_port)
                 httpd.serve_forever()
 
