@@ -110,6 +110,7 @@ class Minerva:
         for post_md_file in (self._folder / "posts").iterdir():
             if post_md_file.is_dir():
                 continue
+            logger.info("Building %s", post_md_file)
             with open(post_md_file, "r") as post_md:
                 posts[post_md_file.stem] = self._build_post(
                     post_md_file.stem, post_md, template
@@ -118,12 +119,12 @@ class Minerva:
         return posts
 
     def _build_posts_data(self):
-        logger.info("Building posts data/assets")
+        logger.info("Building posts/data/assets")
         post_data_folder = self._folder / "posts" / "data"
         if post_data_folder.exists():
             shutil.copytree(post_data_folder, self._output_folder / "posts" / "data")
             return
-        logger.warning("No posts data/assets folder found")
+        logger.warning("No posts/data/assets folder found")
 
     def _build_pagefind(self):
         logger.info("Building search page")
