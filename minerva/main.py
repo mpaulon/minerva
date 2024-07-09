@@ -43,7 +43,7 @@ class Minerva:
             _gitignore.write("*")
 
     def _render(self, template: jinja2.Template, output: Path, **variables):
-        with open(output, "w") as _out:
+        with open(output, "w", encoding="utf-8") as _out:
             _out.write(
                 template.render(
                     metadata=self._config["metadata"][self._config["language"]],
