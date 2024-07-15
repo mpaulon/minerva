@@ -2,16 +2,26 @@ import argparse
 import tomllib
 import io
 import logging
-import shutil
 from pathlib import Path
+import shutil
+import subprocess
+import tarfile
 
 import jinja2
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
 from mdit_py_figure import figure_plugin
+import requests
+
+from . import constants
 
 logger = logging.getLogger("minerva")
+
+
+def ignore_folder(folder: Path):
+    with open(folder / ".gitignore", "w") as _gitignore:
+        _gitignore.write("*")
 
 
 class Minerva:
@@ -38,10 +48,6 @@ class Minerva:
         logger.info("Loading minerva config")
         self._config = config["settings"]
 
-    def _ignore_folder(self, folder: Path):
-        with open(folder / ".gitignore", "w") as _gitignore:
-            _gitignore.write("*")
-
     def _render(self, template: jinja2.Template, output: Path, **variables):
         with open(output, "w", encoding="utf-8") as _out:
             _out.write(
@@ -67,11 +73,12 @@ class Minerva:
             shutil.rmtree(self._output_folder, ignore_errors=True)
         logger.info("Creating output folder at %s", self._output_folder)
         self._output_folder.mkdir(exist_ok=True)
-        self._ignore_folder(self._output_folder)
+        ignore_folder(self._output_folder)
         (self._output_folder / "posts").mkdir(exist_ok=True)
         shutil.copytree(
             self._folder / "themes" / self._config["theme"] / "assets",
             self._output_folder / "assets",
+            dirs_exist_ok=True,
         )
 
     def _build_index(self, posts: dict):
@@ -122,7 +129,11 @@ class Minerva:
         logger.info("Building posts/data/assets")
         post_data_folder = self._folder / "posts" / "data"
         if post_data_folder.exists():
-            shutil.copytree(post_data_folder, self._output_folder / "posts" / "data")
+            shutil.copytree(
+                post_data_folder,
+                self._output_folder / "posts" / "data",
+                dirs_exist_ok=True,
+            )
             return
         logger.warning("No posts/data/assets folder found")
 
@@ -153,6 +164,32 @@ class Minerva:
         self._build_404()
 
 
+def download_pagefind(tools_path: Path, force: bool = False):
+    tools_path.mkdir(parents=True, exist_ok=True)
+    ignore_folder(tools_path)
+    pagefind_archive_path = tools_path / "pagefind.tar.gz"
+
+    if not force and (tools_path / constants.PAGEFIND_BINARY).exists():
+        logger.info("Pagefind binary found")
+        return
+
+    logger.info("Pagefind binary not found")
+    logger.info("Downloading pagefind from %s", constants.PAGEFIND_URL)
+    with requests.get(constants.PAGEFIND_URL, stream=True) as r:
+        with open(pagefind_archive_path, "wb") as f:
+            shutil.copyfileobj(r.raw, f)
+
+    logger.info("Extracting pagefind from %s", pagefind_archive_path)
+
+    tar = tarfile.open(pagefind_archive_path, "r:gz")
+    tar.extractall(pagefind_archive_path.parent)
+    tar.close()
+
+    logger.info("Removing pagefind archive")
+
+    pagefind_archive_path.unlink()
+
+
 def run():
     parser = argparse.ArgumentParser(prog="minerva", description="simple blog engine")
     parser.add_argument("--folder", "-f", type=Path, help="blog folder")
@@ -161,17 +198,36 @@ def run():
         "--verbose", "-v", action="store_true", help="enable debug logging"
     )
 
-    subparser = parser.add_subparsers(dest="action", required=True)
-    build_parser = subparser.add_parser("build")
-    build_parser.add_argument(
-        "--clean", action="store_true", help="cleanup build directory before building"
-    )
-    build_parser.add_argument(
-        "--serve",
+    subparsers = parser.add_subparsers(dest="action", required=True)
+    pagefind_parser = subparsers.add_parser("pagefind")
+    pagefind_parser.add_argument(
+        "--build",
         action="store_true",
-        help="serve the static site on localhost with the specified port",
+        help="re-build site before indexing with pagefind",
     )
+    pagefind_parser.add_argument(
+        "--version", action="store_true", help="display pagefind version"
+    )
+    pagefind_parser.add_argument(
+        "--update", action="store_true", help="force download pagefind version"
+    )
+
+    build_parser = subparsers.add_parser("build")
     build_parser.add_argument("--serve-port", type=int, default=8000, required=False)
+
+    # global arguments
+    for subparser in [pagefind_parser, build_parser]:
+
+        subparser.add_argument(
+            "--clean",
+            action="store_true",
+            help="cleanup build directory before building",
+        )
+        subparser.add_argument(
+            "--serve",
+            action="store_true",
+            help="serve the static site on localhost with the specified port",
+        )
 
     args = parser.parse_args()
 
@@ -187,12 +243,32 @@ def run():
 
     folder_path: Path = args.folder or Path(".")
     config_path: Path = args.config or folder_path / "settings.toml"
+    tools_path: Path = folder_path / "tools"
 
     with open(config_path, "rb") as config_file:
         config = tomllib.load(config_file)
 
-    if args.action == "build":
-        builder = Minerva(config, folder_path)
+    builder = Minerva(config, folder_path)
+
+    if args.action == "pagefind":
+        download_pagefind(tools_path, force=args.update)
+
+        if args.build:
+            builder.build(clean=args.clean)
+
+        pagefind_command = [
+            (tools_path / constants.PAGEFIND_BINARY).as_posix(),
+            "--site",
+            (folder_path / "build").as_posix(),
+        ]
+        if args.version:
+            pagefind_command.append("--version")
+        if args.serve:
+            pagefind_command.append("--serve")
+
+        subprocess.run(pagefind_command)
+
+    elif args.action == "build":
         builder.build(clean=args.clean)
 
         if args.serve:
