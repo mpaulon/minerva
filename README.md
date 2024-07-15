@@ -16,7 +16,13 @@ source env/bin/activate
 minerva --folder example build --clean --serve
 ```
 
-## Use pagefind as local search engine
+## Use pagefind as local server and search engine
+```bash
+source env/bin/activate
+minerva --folder example pagefind --build --clean --serve
+```
+
+### [DEPRECATED] Use pagefind manually as local search engine
  - Download the right pagefind binary [here](https://github.com/CloudCannon/pagefind/releases)
  - Extract it to the `tool` directory
  - Run `minerva --folder example build --clean && ./tools/pagefind_extended --site example/build --serve` 
